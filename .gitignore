@@ -1,0 +1,6 @@
+test/out/
+test/test.html
+__pycache__/
+*.pyc
+src_island_v1/
+node_modules/

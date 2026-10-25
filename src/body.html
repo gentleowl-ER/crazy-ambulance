@@ -1,0 +1,366 @@
+<div id="app">
+  <canvas id="gl" aria-label="遊戲畫面"></canvas>
+
+  <div id="hud" hidden>
+    <div class="hud-top">
+      <div class="timer" id="timer" aria-label="值班剩餘時間"><b id="timerNum">180</b><small id="timerLbl">值班</small><span class="plus" id="timerPlus">+8</span></div>
+      <button class="mission" id="mission" type="button" aria-label="目前任務">
+        <span class="badge" id="missionIcon"></span>
+        <span class="mtext"><span class="mtitle" id="missionTitle">等待派遣</span><span class="msub" id="missionSub"></span></span>
+        <span class="pbar"><i id="pbar"></i></span>
+      </button>
+      <div class="side">
+        <canvas id="minimap" width="232" height="232" aria-label="小地圖（點一下打開大地圖）"></canvas>
+        <div class="roadsign" id="roadSign" hidden></div>
+        <div class="pill score"><b id="score">0</b><span class="tally" id="tally">救活 0 · 過世 0</span></div>
+        <div class="sbtns">
+          <button id="viewBtn" class="mini-btn" type="button" aria-label="切換視角" title="切換視角（V）"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h3.2l1.6-2.4h6.4l1.6 2.4H20a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5zM12 9.6a3.7 3.7 0 1 0 0 7.4 3.7 3.7 0 0 0 0-7.4z" fill="currentColor" fill-rule="evenodd"/></svg></button>
+          <button id="resetBtn" class="mini-btn" type="button" aria-label="卡住了？把救護車放回路上" title="卡住了？放回路上（R）"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.2 12a6.8 6.8 0 1 0 2.1-4.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M4.4 3.6v5h5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button id="pauseBtn" type="button" aria-label="暫停"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.6" height="12" rx="1.2" fill="currentColor"/><rect x="8.4" y="1" width="3.6" height="12" rx="1.2" fill="currentColor"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="calls" id="calls" aria-label="119 派遣清單"></div>
+    <button class="pill trialbtn free-only" id="trialBtn" type="button">送醫計時賽</button>
+    <button class="pill trialbtn addrbtn free-only" id="addrBtn" type="button">路名挑戰</button>
+    <div id="bubble" hidden>
+      <span class="badge" id="bubbleIcon"></span>
+      <div><div class="who" id="bubbleWho">病人</div><div id="bubbleText"></div></div>
+    </div>
+    <div id="casecard" hidden></div>
+    <div id="toasts"></div>
+    <div id="bigmsg"></div>
+    <div class="keys" id="keys">
+      <span class="k"><span class="key">W A S D</span><span class="pill">駕駛</span></span>
+      <span class="k"><span class="key">Space</span><span class="pill">甩尾</span></span>
+      <span class="k" id="keySiren"><span class="key">E</span><span class="pill">鳴笛</span></span>
+      <span class="k"><span class="key">Q</span><span class="pill">大聲公罵人</span></span>
+      <span class="k"><span class="key">M</span><span class="pill">地圖</span></span>
+      <span class="k mission-only"><span class="key">Tab</span><span class="pill">切換派遣</span></span>
+      <span class="k mission-only"><span class="key">C</span><span class="pill">改送醫院</span></span>
+      <span class="k free-only"><span class="key">T</span><span class="pill">計時賽</span></span>
+      <span class="k free-only"><span class="key">G</span><span class="pill">路名挑戰</span></span>
+      <span class="k"><span class="key">V</span><span class="pill" id="keyView">視角：俯視</span></span>
+      <span class="k"><span class="key">R</span><span class="pill">卡住重置</span></span>
+      <span class="k"><span class="key">P</span><span class="pill">暫停</span></span>
+    </div>
+  </div>
+
+  <div id="dhud" hidden>
+    <div class="dtop" id="dtop">
+      <div class="dclock" aria-label="值班剩餘時間"><small>值班</small><b id="dTime">5:00</b></div>
+      <div class="dscore"><b id="dScore">0 分</b><span id="dTally">救活 0 · 過世 0</span></div>
+      <button class="dbtn" id="dSpeed" type="button" aria-label="切換遊戲速度">速度 ×1</button>
+      <button class="dbtn round" id="dPause" type="button" aria-label="暫停"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.6" height="12" rx="1.2" fill="currentColor"/><rect x="8.4" y="1" width="3.6" height="12" rx="1.2" fill="currentColor"/></svg></button>
+    </div>
+    <div class="dsheet" id="dsheet">
+      <canvas id="dmap" aria-label="派遣地圖：點一台救護車，鏡頭就會跟著它"></canvas>
+      <div class="dunits" id="dUnits" aria-label="救護車狀態"></div>
+      <div class="dcalls-h"><b>119 報案</b><span>點「待派車」的報案可以派車</span></div>
+      <div class="dcalls" id="dCalls" aria-label="報案清單"></div>
+    </div>
+  </div>
+
+  <div id="dpanel" hidden role="dialog" aria-modal="true" aria-labelledby="dpTitle">
+    <div class="dp-head"><span class="dp-tag" id="dpTag">119 報案</span><div class="dp-who"><b id="dpTitle"></b><span id="dpSub"></span></div></div>
+    <div class="dest-alert" id="dpAlert" hidden></div>
+    <p class="quote" id="dpQuote"></p>
+    <div class="signs" id="dpSigns"></div>
+    <div class="dp-alt" id="dpPre"></div>
+    <div class="dest-q" id="dpQ">要派哪一台救護車？</div>
+    <div class="drows" id="dpRows"></div>
+    <div class="dp-alt" id="dpAlt"></div>
+    <div class="dest-foot" id="dpFoot">遊戲暫停中，慢慢判斷</div>
+  </div>
+
+  <div id="touch" hidden>
+    <button class="tbtn" id="tLeft" data-k="left" aria-label="左轉"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4 6.5 12l9 8z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+    <button class="tbtn" id="tRight" data-k="right" aria-label="右轉"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 4l9 8-9 8z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+    <button class="tbtn" id="tBrake" data-k="brake" aria-label="煞車或倒車">煞車</button>
+    <button class="tbtn" id="tGas" data-k="gas" aria-label="油門">油門</button>
+    <button class="tbtn" id="tDrift" data-k="drift" aria-label="甩尾">甩尾</button>
+    <button class="tbtn" id="tShout" type="button" aria-label="大聲公：罵不讓路的車">罵人</button>
+    <button class="tbtn" id="tSiren" data-k="siren" aria-label="鳴笛"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17.5v-5a5 5 0 0 1 10 0v5z" fill="currentColor"/><rect x="4.5" y="17.5" width="15" height="3.2" rx="1.2" fill="currentColor"/><path d="M12 2.2v2.6M4.6 5.3l1.9 1.9M19.4 5.3l-1.9 1.9M1.8 12h2.4M19.8 12h2.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="lbl">鳴笛</span></button>
+  </div>
+
+  <div id="dest" class="screen dim" hidden>
+    <div class="card dest-card" role="dialog" aria-modal="true" aria-labelledby="destQ">
+      <div class="dest-head">
+        <span class="tri" id="destTri">危急</span>
+        <div class="dest-who"><b id="destName">病人</b><span id="destLife"></span></div>
+        <button class="xbtn" id="destClose" type="button" aria-label="關閉">
+          <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="dest-alert" id="destAlert" hidden></div>
+      <p class="quote" id="destQuote"></p>
+      <div class="signs" id="destSigns"></div>
+      <div class="dest-q" id="destQ">要送去哪一家醫院？</div>
+      <div class="drows" id="destRows"></div>
+      <div class="legend" id="destLegend"></div>
+      <div class="dest-foot" id="destFoot">遊戲暫停中，慢慢判斷</div>
+    </div>
+  </div>
+
+  <div id="mci" class="screen dim" hidden>
+    <div class="card dest-card mci-card" role="dialog" aria-modal="true" aria-labelledby="mciTitle">
+      <div class="dest-head">
+        <span class="tri" style="background:#e0413a">大量傷患</span>
+        <div class="dest-who"><b id="mciTitle">現場</b><span id="mciSub"></span></div>
+      </div>
+      <p class="mci-lead" id="mciLead"></p>
+      <details class="start-key" open><summary>START 檢傷口訣</summary>
+        <ol>
+          <li>能自己走 → <b class="tg g">綠</b></li>
+          <li>沒有呼吸：打開呼吸道仍沒有 → <b class="tg k">黑</b>；開始呼吸 → <b class="tg r">紅</b></li>
+          <li>呼吸每分鐘超過 30 次 → <b class="tg r">紅</b></li>
+          <li>摸不到橈動脈脈搏 → <b class="tg r">紅</b></li>
+          <li>不能聽從簡單指令 → <b class="tg r">紅</b></li>
+          <li>以上都沒有 → <b class="tg y">黃</b></li>
+        </ol>
+      </details>
+      <div class="mci-list" id="mciList"></div>
+      <div class="drows" id="mciTake"></div>
+      <div class="btn-row"><button class="btn" id="mciGo" type="button">完成檢傷</button></div>
+      <div class="dest-foot">遊戲暫停中，慢慢判斷</div>
+    </div>
+  </div>
+
+  <div id="bigmap" class="screen dim" hidden>
+    <div class="card map-card" role="dialog" aria-modal="true" aria-labelledby="mapTitle">
+      <div class="map-head">
+        <h2 id="mapTitle">台北市地圖</h2><span class="pill" id="mapNote">遊戲暫停中</span>
+        <button class="xbtn" id="mapClose" type="button" aria-label="關閉地圖">
+          <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <canvas id="mapCanvas" aria-label="台北市地圖"></canvas>
+    </div>
+  </div>
+
+  <div id="title" class="screen" hidden>
+    <div class="card title-card">
+      <div class="logo"><h1>瘋狂救護車</h1><span class="pill sub">台北急救任務</span></div>
+      <div class="modes">
+        <button class="mode main" id="startBtn" type="button"><b>出勤任務</b><span>接起打 119 的病人，聽症狀選對醫院，和時間賽跑</span></button>
+        <button class="mode free" id="freeBtn" type="button"><b>自由模式</b><span>沒有時間限制，開車逛台北、找出所有地標</span></button>
+        <button class="mode disp" id="dispBtn" type="button"><b>派遣模式</b><span>坐鎮 119 派遣台，指揮六台救護車</span></button>
+      </div>
+      <div class="controls" id="ctlHelp"></div>
+      <div class="btn-row">
+        <button class="btn ghost small" id="codexBtn" type="button">病例圖鑑</button>
+        <button class="btn ghost small" id="medalsBtn" type="button">獎牌櫃</button>
+        <button class="btn ghost small" id="garageBtn" type="button">車庫升級</button>
+        <button class="btn ghost small" id="soundBtn" type="button">音效：開</button>
+        <button class="btn ghost small" id="musicBtn" type="button">音樂：開</button>
+        <button class="btn ghost small" id="introReplay" type="button">重看開場</button>
+      </div>
+      <div class="best" id="bestLine"></div>
+    </div>
+  </div>
+
+  <div id="brief" class="screen" hidden>
+    <div class="card brief-card">
+      <div class="brief-head"><h2 id="briefTitle">出勤前簡報</h2><span class="pill">台北市 119 救護</span></div>
+      <p class="lead small" id="briefLead">病人上車後會說出症狀。先判斷他需要<em>哪一種急救能力</em>，再挑一家<em>有這種能力、又最近</em>的醫院。</p>
+      <div class="homepick" id="homePick" hidden>
+        <span class="hp-h">值勤分隊</span>
+        <div class="hp-row" id="homeRow" role="group" aria-label="選擇值勤分隊"></div>
+        <p class="hp-note" id="homeNote"></p>
+      </div>
+      <div class="homepick wxpick" id="wxPick" hidden>
+        <span class="hp-h">天氣</span>
+        <div class="hp-row" id="wxRow" role="group" aria-label="選擇這一班的天氣"></div>
+        <p class="hp-note" id="wxNote"></p>
+      </div>
+      <div class="homepick wxpick" id="tpPick" hidden>
+        <span class="hp-h">時段</span>
+        <div class="hp-row" id="tpRow" role="group" aria-label="選擇這一班的時段"></div>
+        <p class="hp-note" id="tpNote"></p>
+      </div>
+      <div class="dbrief" id="dbrief" hidden>
+        <section>
+          <h3>派遣員的四個步驟</h3>
+          <div class="dsteps">
+            <div class="dstep"><span class="sn">1</span><div><b>先問、再追問</b><span>先問「有沒有意識？有沒有正常呼吸？」兩個都沒有，就可能是心跳停止：派車的同時，<em>在電話中指導民眾 CPR</em>。再依主訴追問（胸痛、中風、呼吸困難、受傷、兒童、孕婦…），紅字是危險徵象，最後<em>判斷緊急程度</em>：危急、緊急或輕症。</span></div></div>
+            <div class="dstep"><span class="sn">2</span><div><b>要不要派車？</b><span>詢問、預約回診、動物受傷、吵架、惡作劇都不需要救護車，轉介給對的單位。只要可能有人受傷生病，一律派車。</span></div></div>
+            <div class="dstep"><span class="sn">3</span><div><b>派哪一台？</b><span>危急病人（沒有呼吸、胸痛冒冷汗、中風、大出血、嚴重過敏）優先派<em class="als">高級救護</em>，到院前就能給藥、處理呼吸道；其他病人派最近、有空的<em class="bls">一般救護</em>，把高級救護留給危急的人。每台車都有自己的<em>轄區</em>，派去別區就是「跨區」，原本的轄區會暫時沒車（空窗）。</span></div></div>
+            <div class="dstep"><span class="sn">4</span><div><b>要不要送醫、送哪裡？</b><span>救護人員到場後會回報看到什麼。出現屍斑、屍僵是<em>明顯死亡</em>，不送醫，陪伴家屬並通報警方；已止血、能自己走路的<em>明顯輕症</em>可以現場處置、建議自行就醫；其他病人依急救能力選醫院，也看一下急診塞不塞：輕症送區域或地區醫院，把醫學中心留給重症。</span></div></div>
+          </div>
+        </section>
+        <section>
+          <h3>六台救護車</h3>
+          <div class="bunits" id="dUnitsBrief"></div>
+          <p class="dnote">值班 5 分鐘，後半段是下班尖峰，報案會越來越多。報案進來時遊戲會暫停，讓你慢慢判斷；救護車出發後會自己開，鳴笛時路口的車會停下來讓路。北邊的士林、北投路程遠，各有自己的救護車；車子跨區送醫，回到轄區前那一區就是空窗。急診每收一位病人就佔一張床，壅塞時救護車要等床才能離開，滿床時暫停收治。</p>
+          <label class="rtopt"><input type="checkbox" id="rtMode"><span><b>即時模式（進階）</b>報案時遊戲不暫停，只放慢到 0.3 倍</span></label>
+        </section>
+      </div>
+      <div class="brief-grid">
+        <section>
+          <h3>十二家醫院</h3>
+          <div class="hcards" id="hcards"></div>
+        </section>
+        <section>
+          <h3>看症狀，找能力</h3>
+          <div class="caplist" id="caplist"></div>
+          <h3>病人分級</h3>
+          <div class="trilist" id="trilist"></div>
+          <h3>急診會塞車</h3>
+          <div class="trilist" id="erList"></div>
+          <h3 class="drive-only">上路須知</h3>
+          <div class="rules drive-only" id="rules"></div>
+          <h3 id="briefMapTitle">醫院在哪裡</h3>
+          <canvas id="briefMap" width="720" height="782" aria-label="醫院位置圖"></canvas>
+        </section>
+      </div>
+      <p class="disclaimer">十二家醫院都在台北的真實位置，名字是醫護人員和網友常用的綽號；建築外觀、分級和急救能力是遊戲簡化的設定，不代表醫院實際的服務。送醫原則參考台灣的緊急醫療能力分級，實際由救護人員依當地規範判斷。內容僅供衛教參考，緊急時請撥 119。</p>
+      <div class="btn-row">
+        <button class="btn" id="goBtn" type="button">開始出勤</button>
+        <button class="btn ghost" id="briefBack" type="button">返回</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="codex" class="screen" hidden>
+    <div class="card codex-card">
+      <div class="brief-head"><h2>病例圖鑑</h2><span class="pill" id="codexCount">0/0</span></div>
+      <p class="lead small">在出勤任務或派遣模式遇到的病例會收進圖鑑，點開就能複習判斷重點。</p>
+      <div class="codex" id="codexList"></div>
+      <div class="btn-row"><button class="btn ghost" id="codexBack" type="button">返回</button></div>
+    </div>
+  </div>
+
+  <div id="medals" class="screen" hidden>
+    <div class="card codex-card">
+      <div class="brief-head"><h2>獎牌櫃</h2><span class="pill" id="medalCount">0/0</span></div>
+      <p class="lead small">出勤任務、自由模式和派遣模式都拿得到獎牌。好的獎牌靠又快又穩又判斷正確，不太光榮的「獎牌」……就當作提醒吧。</p>
+      <div class="medallist" id="medalList"></div>
+      <div class="btn-row"><button class="btn ghost" id="medalsBack" type="button">返回</button></div>
+    </div>
+  </div>
+
+  <div id="garage" class="screen" hidden>
+    <div class="card codex-card">
+      <div class="brief-head"><h2>車庫：救護車升級</h2><span class="pill">救護基金 <b id="garageBank">0</b></span></div>
+      <p class="lead small">每一班的得分都會存進救護基金（派遣模式算三成五），拿來幫你開的救護車升級。升級對出勤任務和自由模式都有效。</p>
+      <div class="glist" id="garageList"></div>
+      <div class="btn-row"><button class="btn ghost" id="garageBack" type="button">返回</button></div>
+    </div>
+  </div>
+
+  <div id="spots" class="screen" hidden>
+    <div class="card codex-card">
+      <div class="brief-head"><h2>自由模式：從哪裡出發？</h2></div>
+      <p class="lead small" id="spotsNote"></p>
+      <div class="homepick wxpick" id="tpPick2">
+        <span class="hp-h">路況時段</span>
+        <div class="hp-row" id="tpRow2" role="group" aria-label="選擇路況時段"></div>
+        <p class="hp-note" id="tpNote2"></p>
+      </div>
+      <div class="spots" id="spotsList"></div>
+      <div class="btn-row"><button class="btn ghost" id="spotsBack" type="button">返回</button></div>
+    </div>
+  </div>
+
+  <div id="pause" class="screen" hidden>
+    <div class="card" style="width:min(400px,100%)">
+      <div class="over-head"><h2>暫停中</h2></div>
+      <div class="btn-row">
+        <button class="btn" id="resumeBtn" type="button">繼續</button>
+        <button class="btn ghost" id="briefBtn2" type="button">醫院簡介</button>
+        <button class="btn ghost" id="spotBtn2" type="button" hidden>換地點</button>
+        <button class="btn ghost" id="viewBtn2" type="button">視角：俯視</button>
+        <button class="btn ghost" id="restartBtn" type="button">重新開始</button>
+        <button class="btn ghost" id="quitBtn" type="button">回標題</button>
+        <button class="btn ghost" id="soundBtn2" type="button">音效：開</button>
+        <button class="btn ghost" id="musicBtn2" type="button">音樂：開</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="over" class="screen" hidden>
+    <div class="card over-card">
+      <div class="over-head">
+        <h2 id="overTitle">下班了！</h2>
+        <div class="rank"><span class="letter" id="rankLetter">A</span><span class="name" id="rankName">王牌救護員</span></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span id="stL1">救活</span><b id="stSaved">0</b></div>
+        <div class="stat"><span id="stL2">不幸過世</span><b id="stDead">0</b></div>
+        <div class="stat"><span id="stL3">一次就送對</span><b id="stFirst">0%</b></div>
+        <div class="stat"><span id="stL4">最佳選擇</span><b id="stIdeal">0</b></div>
+      </div>
+      <div class="total"><span>總分</span><b id="stScore">0</b></div>
+      <div class="newbest" id="newBest" hidden>新紀錄！</div>
+      <div class="erline" id="erLine" hidden></div>
+      <h3 class="rv-title" id="medalTitle" hidden>本班獎牌</h3>
+      <div class="medalrow" id="medalRow" hidden></div>
+      <h3 class="rv-title">病例回顧</h3>
+      <div class="review" id="review"></div>
+      <div class="best" id="bestLine2"></div>
+      <div class="btn-row">
+        <button class="btn" id="againBtn" type="button">再出勤一次</button>
+        <button class="btn ghost" id="homeBtn" type="button">回標題</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- opening: the driver's seat of 信義 94 -->
+  <div id="intro" hidden>
+    <div class="ck-glow r"></div><div class="ck-glow b"></div>
+    <div class="ck-cab">
+      <svg class="ck-pillar l" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 H100 L24 100 H0 Z" fill="#3b4048"/><path d="M100 0 L24 100" stroke="#2a211c" stroke-width="5" vector-effect="non-scaling-stroke"/></svg>
+      <svg class="ck-pillar r" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M100 0 H0 L76 100 H100 Z" fill="#3b4048"/><path d="M0 0 L76 100" stroke="#2a211c" stroke-width="5" vector-effect="non-scaling-stroke"/></svg>
+      <svg class="ck-top" viewBox="0 0 1000 190" aria-hidden="true">
+        <path d="M-20 -10 H1020 V58 C 760 82 240 82 -20 58 Z" fill="#3b4048" stroke="#2a211c" stroke-width="6"/>
+        <path d="M-20 50 C 240 74 760 74 1020 50" fill="none" stroke="#565d67" stroke-width="5"/>
+        <rect class="lb r" x="300" y="60" width="170" height="9" rx="4.5"/><rect class="lb b" x="530" y="60" width="170" height="9" rx="4.5"/>
+        <rect x="493" y="62" width="14" height="22" fill="#2b2f35"/>
+        <rect x="422" y="80" width="156" height="46" rx="14" fill="#2b2f35" stroke="#2a211c" stroke-width="5"/>
+        <rect x="433" y="88" width="134" height="30" rx="9" fill="#9fd6ec"/>
+        <path d="M440 112 L 474 94 L 560 94 L 560 114 Z" fill="#d4f1fa" opacity="0.55"/>
+        <path d="M548 124 Q 552 138 549 150" stroke="#c0392b" stroke-width="3" fill="none"/>
+        <rect x="537" y="148" width="24" height="34" rx="3" fill="#f2c14e" stroke="#a3221c" stroke-width="3"/>
+        <path d="M543 158 h12 M543 165 h12 M543 172 h12" stroke="#a3221c" stroke-width="2.5"/>
+      </svg>
+      <svg class="ck-dash" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+        <path d="M150 310 C 205 196 300 158 500 154 C 700 158 795 196 850 310 Z" fill="#f7f4ee" stroke="#2a211c" stroke-width="7"/>
+        <path d="M232 222 C 330 190 670 190 768 222" fill="none" stroke="#e23b33" stroke-width="18" stroke-linecap="round"/>
+        <path d="M488 160 h24 v12 h12 v24 h-12 v12 h-24 v-12 h-12 v-24 h12 z" fill="#e23b33" stroke="#ffffff" stroke-width="3"/>
+        <path d="M-10 310 V 226 C 140 206 330 198 500 200 C 670 198 860 206 1010 226 V 310 Z" fill="#3b4048" stroke="#2a211c" stroke-width="7"/>
+        <path d="M0 233 C 150 213 330 206 500 208 C 670 206 850 213 1000 233" fill="none" stroke="#59606a" stroke-width="7"/>
+        <g transform="translate(300 262)">
+          <rect x="-92" y="-38" width="184" height="64" rx="24" fill="#262a30" stroke="#2a211c" stroke-width="5"/>
+          <circle cx="-40" cy="-4" r="27" fill="#14171b"/><circle cx="40" cy="-4" r="27" fill="#14171b"/>
+          <path d="M-61 9 A 23 23 0 1 1 -19 9" fill="none" stroke="#f0b323" stroke-width="4" stroke-linecap="round"/>
+          <path d="M19 9 A 23 23 0 1 1 61 9" fill="none" stroke="#7fd3b5" stroke-width="4" stroke-linecap="round"/>
+          <g transform="translate(-40 -4)"><line id="ckNeedle" x1="0" y1="0" x2="0" y2="-21" stroke="#ff6a3d" stroke-width="4" stroke-linecap="round"/></g>
+          <line x1="40" y1="-4" x2="56" y2="-14" stroke="#ff6a3d" stroke-width="4" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(560 236)">
+          <rect width="132" height="48" rx="9" fill="#262a30" stroke="#2a211c" stroke-width="5"/>
+          <rect x="10" y="10" width="74" height="28" rx="5" fill="#7fd3b5"/>
+          <text x="47" y="31" text-anchor="middle" font-size="21" font-family="Fredoka, Arial, sans-serif" fill="#1d4434">119</text>
+          <circle class="led" cx="108" cy="24" r="8" fill="#e23b33"/>
+        </g>
+        <g id="ckWheel">
+          <circle cx="300" cy="340" r="150" fill="none" stroke="#2b2f35" stroke-width="36"/>
+          <circle cx="300" cy="340" r="150" fill="none" stroke="#4a515b" stroke-width="8" stroke-dasharray="8 22"/>
+          <path d="M300 340 L 168 292 M300 340 L 432 292" stroke="#2b2f35" stroke-width="30" stroke-linecap="round"/>
+          <circle cx="300" cy="340" r="46" fill="#2b2f35" stroke="#1d2024" stroke-width="5"/>
+        </g>
+      </svg>
+    </div>
+    <div class="ck-cap" id="introCap" aria-live="polite"></div>
+    <div class="logo ck-logo" id="introLogo"><h1>瘋狂救護車</h1><span class="pill sub">台北急救任務</span></div>
+    <div class="ck-gate">
+      <span class="pill ck-status">信義 94・待命中</span>
+      <button class="btn ck-go" id="introGo" type="button">出勤！</button>
+      <button class="btn ghost small" id="introSkip0" type="button">跳過開場</button>
+    </div>
+    <button class="btn ghost small ck-skip" id="introSkip" type="button">跳過 ▸▸</button>
+    <div class="ck-fade" id="introFade"></div>
+  </div>
+
+  <div id="loading"><span class="pill" id="loadingText">台北市生成中…</span></div>
+</div>
