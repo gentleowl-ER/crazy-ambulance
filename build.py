@@ -43,4 +43,7 @@ skeleton = (
     "</head><body>\n" + page_dbg + "\n</body></html>"
 )
 (ROOT / "test" / "test.html").write_text(skeleton)
+# the standalone page (GitHub Pages): the same document shell the artifact host adds, without the debug hooks
+head_shell = skeleton.split("</head><body>")[0] + "</head><body>\n"
+(ROOT / "index.html").write_text(head_shell + page + "\n</body></html>")
 print("built", len(page), "bytes;", len(js_parts), "js parts")

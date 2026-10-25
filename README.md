@@ -24,15 +24,14 @@
 src/head.html, src/body.html   頁面骨架與樣式
 src/js/*.js                    遊戲程式（依檔名順序串接）
 build.py                       組合成單一 HTML：dist/crazy-ambulance.html 與 test/test.html
-index.html                     dist/crazy-ambulance.html 的副本（給 GitHub Pages 用）
+index.html                     可直接開啟的完整頁面（給 GitHub Pages 用）
 test/*.py                      Playwright 自動測試（無頭 Chromium）
 ```
 
 ## 建置
 
 ```bash
-python3 build.py
-cp dist/crazy-ambulance.html index.html
+python3 build.py   # 同時產生 dist/crazy-ambulance.html、index.html 與 test/test.html
 ```
 
 遊戲是單一 HTML 檔，執行時從 jsDelivr 載入 three.js r149，從 Google Fonts 載入字型。
